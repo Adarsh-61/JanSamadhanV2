@@ -1,112 +1,96 @@
-# JanSamadhan — Public Complaint Board
+# JanSamadhan (Public Complaint Board)
 
-Anonymous public complaint board with real-time status tracking. Built on a 100% free-tier stack.
+A high-performance, anonymous platform for civic grievance tracking. This project provides a production-grade interface for citizens to submit issues and track resolution status in real-time.
 
-## 🏗️ Stack
+## Technology Stack
 
-| Service | Purpose | Tier |
-|---------|---------|------|
-| **Next.js** (App Router) | Frontend + API routes | — |
-| **Vercel** | Hosting & Serverless | Free |
-| **Supabase** | Postgres, Auth, Realtime, Storage | Free |
-| **Google reCAPTCHA v3** | Spam protection | Free |
+| Component | Technology | Tier |
+|-----------|------------|------|
+| Framework | Next.js (App Router) | - |
+| Platform | Vercel (Serverless) | Free |
+| Database | Supabase (Postgres) | Free |
+| Realtime | Supabase Realtime | Free |
+| Storage | Supabase Storage | Free |
+| Auth | Supabase Auth | Free |
+| Security | Google reCAPTCHA v3 | Free |
 
-## 🚀 Quick Start
+## Architecture Overview
+
+The system architecture is designed for scalability and security on a zero-cost infrastructure:
+
+1. **Frontend**: Next.js client with React 19 and Tailwind CSS v4, utilizing a glassmorphism design system.
+2. **API Layer**: Next.js Serverless Functions for secure database interactions and input validation.
+3. **Database**: Postgres on Supabase with Row-Level Security (RLS) policies enforcing data integrity.
+4. **Realtime Engine**: WebSocket-based updates using Supabase Realtime to keep the public board synchronized.
+
+## Setup and Installation
 
 ### 1. Prerequisites
-- This project includes a portable Node.js — no global install needed.
-- Activate the dev environment:
+This repository includes a portable Node.js environment. No global installation is required. Activate the local environment using:
 
 ```powershell
-# Windows PowerShell
+# In PowerShell
 . .\dev.ps1
 ```
 
-### 2. Setup Supabase
-1. Create a free project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** → paste contents of `supabase/migrations/001_init.sql` → Run
-3. Go to **Storage** → Create a bucket named `attachments` (set as **Public**)
-4. Go to **Settings > API** → Copy your project URL and keys
+### 2. Database Migration
+1. Initialize a new project at [supabase.com](https://supabase.com).
+2. Execute the schema defined in `supabase/migrations/001_init.sql` using the Supabase SQL Editor.
+3. Create a public storage bucket named `attachments`.
 
-### 3. Environment Variables
-```powershell
-Copy-Item .env.example .env.local
-# Then edit .env.local with your Supabase values
+### 3. Environment Configuration
+Copy the template and populate it with your Supabase credentials:
+
+```bash
+cp .env.example .env.local
 ```
 
-### 4. Run Locally
-```powershell
-. .\dev.ps1
+Required keys:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (Server-side only)
+- `RECAPTCHA_SECRET_KEY`
+
+### 4. Local Development
+Start the development server:
+
+```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000)
 
-## 👤 Admin Setup
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-### Create Admin User
-1. Go to Supabase **Authentication** → **Users** → **Add User**
-2. Create user with email + password
-3. Copy the user's UUID
-4. Run this SQL in Supabase SQL Editor:
+## Admin Configuration
+
+### 1. Account Creation
+1. Create a user via Supabase **Authentication** -> **Users**.
+2. Copy the generated User ID (UUID).
+3. Map the user as an administrator:
 
 ```sql
 INSERT INTO admin_users (id, email, display_name)
-VALUES ('<user-uuid>', 'admin@example.com', 'Admin');
+VALUES ('<USER_UUID>', 'admin@example.com', 'Admin');
 ```
 
-### Login
-Go to `/admin/login` and sign in with the admin credentials.
+### 2. Dashboard Access
+Authenticate at `/admin/login` to manage complaints, update resolution status, and add administrative notes.
 
-## 📁 Project Structure
+## Security Considerations
 
-```
-├── src/
-│   ├── app/                    # Next.js pages & API routes
-│   │   ├── page.js             # Public board
-│   │   ├── submit/page.js      # Submit complaint form
-│   │   ├── complaint/[id]/     # Complaint detail
-│   │   ├── admin/              # Admin login + panel
-│   │   └── api/                # Serverless API routes
-│   ├── components/             # React components
-│   ├── contexts/               # Auth + Toast contexts
-│   ├── hooks/                  # Realtime hooks
-│   └── lib/                    # Supabase clients, rate limiter
-├── supabase/migrations/        # SQL schema
-├── .node/                      # Portable Node.js (local only)
-├── dev.ps1                     # Dev environment activation
-└── .env.example                # Environment template
-```
+- **Data Privacy**: No Personal Identifiable Information (PII) is collected or stored. All citizen submissions are anonymous.
+- **Access Control**: Row-Level Security (RLS) policies prevent unauthorized modifications. Administrative actions require valid JWT tokens.
+- **Audit Logging**: Every status update is recorded in the `complaint_history` table with mandatory administrative notation.
+- **Input Sanitization**: Client and server-side validation using custom sanitization logic for all text and file inputs.
+- **Spam Prevention**: Integrated reCAPTCHA v3 scoring and IP-based rate limiting (5 requests per minute).
 
-## 🔒 Security
+## Deployment (Vercel)
 
-- **No PII** — no personal data collected or stored
-- **Anonymous submissions** — no user accounts for submitters
-- **Admin-only updates** — protected by Supabase Auth + RLS policies
-- **Mandatory notes** — status changes to Working/Solved require admin note (enforced API + DB trigger)
-- **Audit log** — every admin action logged in `complaint_history`
-- **Rate limiting** — in-memory + reCAPTCHA v3
-- **File limits** — 2MB max, images & PDFs only
+1. Push your repository to GitHub.
+2. Connect your project to Vercel.
+3. Inject the keys from `.env.local` into the **Environment Variables** panel in Vercel settings.
+4. The deployment will automatically handle the build and optimized serving.
 
-## 🧹 Clean Removal
+## License and Attribution
 
-Delete the project folder to remove everything:
-```powershell
-Remove-Item -Recurse -Force x:\JanSamadhan
-```
-**✔ No global installs. ✔ No system PATH changes. ✔ Zero system trace.**
-
-## 📊 Free Tier Limits
-
-| Service | Limits |
-|---------|--------|
-| Supabase DB | 500MB storage, 2 GB bandwidth |
-| Supabase Auth | 50,000 MAU |
-| Supabase Storage | 1GB, 2GB transfer |
-| Supabase Realtime | 200 concurrent connections |
-| Vercel | 100GB bandwidth, 100,000 invocations |
-
-### Staying Within Limits
-- Attachments limited to 2MB, max 3 per complaint
-- Pagination limits queries to 50 per page
-- Rate limiting prevents spam (5 requests/minute/IP)
-- If realtime hits limits, the public board falls back to manual refresh
+Open-source project authored by Adarsh-61.
+copyright 2026 Adarsh-61. All rights reserved.
