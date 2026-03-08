@@ -1,5 +1,5 @@
 -- ======================================================
--- JanSamadhan — Database Schema & RLS Policies
+-- JanSamadhan+ -- Database Schema & RLS Policies
 -- Run this in Supabase SQL Editor
 -- ======================================================
 

@@ -2,9 +2,9 @@ import "./globals.css";
 import ClientLayout from "./client-layout";
 
 export const metadata = {
-  title: "JanSamadhan",
+  title: "JanSamadhan+",
   description: "A fast, open-source platform for submitting and tracking civic issues.",
-  keywords: ["complaint", "public", "anonymous", "jansamadhan", "grievance"],
+  keywords: ["complaint", "public", "anonymous", "jansamadhan", "jansamadhanv2", "grievance"],
 };
 
 export default function RootLayout({ children }) {

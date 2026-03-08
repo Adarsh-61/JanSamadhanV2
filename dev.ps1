@@ -1,4 +1,4 @@
-# JanSamadhan Dev Environment Activation Script
+# JanSamadhan+ Dev Environment Activation Script
 # Usage: . .\dev.ps1
 # This adds the portable Node.js to the current session's PATH only (no global changes)
 
@@ -14,7 +14,7 @@ $env:PATH = "$nodeDir;$env:PATH"
 $env:npm_config_prefix = Join-Path $PSScriptRoot ".npm-global"
 
 Write-Host ""
-Write-Host "  JanSamadhan Dev Environment Activated" -ForegroundColor Green
+Write-Host "  JanSamadhan+ Dev Environment Activated" -ForegroundColor Green
 Write-Host "  Node: $(node --version)  |  npm: $(npm --version)" -ForegroundColor Cyan
 Write-Host "  All tools are LOCAL to this project folder." -ForegroundColor DarkGray
 Write-Host ""

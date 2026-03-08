@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase-client';
 import { useComplaintHistory } from '@/hooks/useComplaintHistory';
+import { useAuth } from '@/contexts/AuthContext';
 import StatusBadge from '@/components/StatusBadge';
 import HistoryTimeline from '@/components/HistoryTimeline';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -15,6 +16,7 @@ export default function ComplaintDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const { history, loading: historyLoading } = useComplaintHistory(id);
+    const { isAdmin } = useAuth();
 
     useEffect(() => {
         if (!id) return;
@@ -117,28 +119,39 @@ export default function ComplaintDetail() {
                             <h3 className="text-small" style={{ fontWeight: 600, marginBottom: 8, color: 'var(--color-gray-700)' }}>
                                 Attachments ({complaint.attachments.length})
                             </h3>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                {complaint.attachments.map((att, idx) => (
-                                    <a
-                                        key={idx}
-                                        href={att.url}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: 8,
-                                            padding: '8px 12px', borderRadius: 6,
-                                            backgroundColor: 'var(--color-gray-50)',
-                                            border: '1px solid var(--color-gray-200)',
-                                            textDecoration: 'none', color: 'var(--color-gray-700)', fontSize: '0.8125rem',
-                                            transition: 'border-color 0.15s ease',
-                                        }}
-                                    >
-                                        <span style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {att.name}
-                                        </span>
-                                    </a>
-                                ))}
-                            </div>
+                            {isAdmin ? (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                    {complaint.attachments.map((att, idx) => (
+                                        <a
+                                            key={idx}
+                                            href={att.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: 8,
+                                                padding: '8px 12px', borderRadius: 6,
+                                                backgroundColor: 'var(--color-gray-50)',
+                                                border: '1px solid var(--color-gray-200)',
+                                                textDecoration: 'none', color: 'var(--color-gray-700)', fontSize: '0.8125rem',
+                                                transition: 'border-color 0.15s ease',
+                                            }}
+                                        >
+                                            <span style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {att.name}
+                                            </span>
+                                        </a>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{
+                                    padding: '10px 14px', borderRadius: 6,
+                                    backgroundColor: 'var(--color-gray-50)',
+                                    border: '1px solid var(--color-gray-200)',
+                                    fontSize: '0.8125rem', color: 'var(--color-gray-600)',
+                                }}>
+                                    {complaint.attachments.length} file{complaint.attachments.length > 1 ? 's' : ''} attached
+                                </div>
+                            )}
                         </div>
                     )}
 

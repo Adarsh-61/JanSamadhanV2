@@ -54,7 +54,7 @@ export function ToastProvider({ children }) {
                 aria-live="polite"
                 style={{
                     position: 'fixed',
-                    top: 16,
+                    top: 72,
                     right: 16,
                     zIndex: 9999,
                     display: 'flex',

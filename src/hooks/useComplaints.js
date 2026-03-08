@@ -22,7 +22,8 @@ export function useComplaints({ statusFilter = 'all', searchQuery = '' } = {}) {
             }
 
             if (searchQuery) {
-                query = query.or(`title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+                const escaped = searchQuery.replace(/[\\%_]/g, c => '\\' + c);
+                query = query.or(`title.ilike.%${escaped}%,description.ilike.%${escaped}%`);
             }
 
             const { data, error: err } = await query.limit(50);
@@ -67,18 +68,8 @@ export function useComplaints({ statusFilter = 'all', searchQuery = '' } = {}) {
                     schema: 'public',
                     table: 'complaints',
                 },
-                (payload) => {
-                    if (payload.eventType === 'INSERT') {
-                        setComplaints(prev => [payload.new, ...prev]);
-                    } else if (payload.eventType === 'UPDATE') {
-                        setComplaints(prev =>
-                            prev.map(c => c.id === payload.new.id ? payload.new : c)
-                        );
-                    } else if (payload.eventType === 'DELETE') {
-                        setComplaints(prev =>
-                            prev.filter(c => c.id !== payload.old.id)
-                        );
-                    }
+                () => {
+                    fetchComplaints();
                 }
             )
             .subscribe();
@@ -86,7 +77,7 @@ export function useComplaints({ statusFilter = 'all', searchQuery = '' } = {}) {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, []);
+    }, [fetchComplaints]);
 
     return { complaints, counts, loading, error, refetch: fetchComplaints };
 }

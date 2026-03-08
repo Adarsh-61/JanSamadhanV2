@@ -2,12 +2,23 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 import { createClient } from '@supabase/supabase-js';
 import { sanitizeText } from '@/lib/sanitize';
+import { rateLimit } from '@/lib/rate-limit';
 
 const VALID_STATUSES = ['no_action', 'working', 'solved'];
 
 export async function PATCH(request, { params }) {
     try {
         const { id } = await params;
+
+        const forwarded = request.headers.get('x-forwarded-for');
+        const ip = forwarded?.split(',')[0]?.trim() || 'unknown';
+        const rateLimitResult = rateLimit(ip);
+        if (!rateLimitResult.allowed) {
+            return NextResponse.json(
+                { error: `Too many requests. Try again in ${rateLimitResult.resetIn} seconds.` },
+                { status: 429 }
+            );
+        }
 
         // Validate UUID format to prevent injection
         const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

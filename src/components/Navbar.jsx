@@ -33,7 +33,7 @@ export default function Navbar() {
             <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56 }}>
                 <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ fontSize: '1.125rem', fontWeight: 700, color: 'var(--color-gray-900)', letterSpacing: '-0.02em' }}>
-                        JanSamadhan
+                        JanSamadhan+
                     </span>
                 </Link>
 
