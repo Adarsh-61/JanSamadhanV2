@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/contexts/ToastContext';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 import FileUpload from '@/components/FileUpload';
-import { supabase } from '@/lib/supabase-client';
 
 export default function SubmitComplaint() {
     const router = useRouter();
     const toast = useToast();
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [files, setFiles] = useState([]);
@@ -26,22 +27,19 @@ export default function SubmitComplaint() {
     }
 
     async function uploadFiles() {
-        const attachments = [];
+        const formData = new FormData();
         for (const file of files) {
-            const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${file.name}`;
-            const { data, error } = await supabase.storage
-                .from('attachments')
-                .upload(fileName, file, { contentType: file.type, upsert: false });
-
-            if (error) {
-                console.error('Upload error:', error);
-                continue;
-            }
-
-            const { data: urlData } = supabase.storage.from('attachments').getPublicUrl(data.path);
-            attachments.push({ url: urlData.publicUrl, name: file.name, type: file.type });
+            formData.append('files', file);
         }
-        return attachments;
+
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'File upload failed.');
+        return data.attachments || [];
     }
 
     async function handleSubmit(e) {
@@ -55,6 +53,15 @@ export default function SubmitComplaint() {
                 attachments = await uploadFiles();
             }
 
+            let recaptchaToken = null;
+            if (executeRecaptcha) {
+                try {
+                    recaptchaToken = await executeRecaptcha('submit_complaint');
+                } catch {
+                    // reCAPTCHA unavailable, proceed without token
+                }
+            }
+
             const res = await fetch('/api/complaints', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -62,6 +69,7 @@ export default function SubmitComplaint() {
                     title: title.trim() || null,
                     description: description.trim(),
                     attachments,
+                    recaptchaToken,
                 }),
             });
 
